@@ -1,3 +1,2 @@
 # python_ml
-a repository for python machine learning 
-covers topics in sklearn guidebooks 
+a repository for python machine learning that covers topics in sklearn guidebook
