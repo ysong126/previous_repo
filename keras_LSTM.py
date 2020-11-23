@@ -20,8 +20,8 @@ def parse(x):
     return datetime.strptime(x, '%Y %m %d %H')
 
 
-dataset = read_csv('raw.csv', parse_dates=[['year', 'month', 'day', 'hour']],index_col=0,date_parser=parse)
-dataset.drop('No',axis=1, inplace=True)
+dataset = read_csv('raw.csv', parse_dates=[['year', 'month', 'day', 'hour']], index_col=0,date_parser=parse)
+dataset.drop('No', axis=1, inplace=True)
 
 dataset.columns = ['pollution', 'dew', 'temp', 'press', 'wnd_dir', 'wnd_spd', 'snow', 'rain']
 dataset.index.name = 'date'
@@ -67,7 +67,7 @@ def series_to_supervised(data, col_names, n_in=1, dropnan=True ):
         names += ['%s(t-%d)' % (col_name, i) for col_name in col_names]
     # concatenate and drop the invalid values due to shift
     cols.append(df)
-    names += ['%s(t0)' % (col_name) for col_name in col_names]
+    names += ['%s(t0)' % col_name for col_name in col_names]
     agg = concat(cols, axis=1)
     agg.columns = names
     if dropnan:
@@ -99,25 +99,25 @@ test = values[n_train_hours:, :]
 train_X, train_y = train[:, :-1], train[:, -1]
 test_X, test_y = test[:, :-1], test[:, -1]
 
-# reshape to the LSTM argument shape (num of samples, timestamp, features)
+# reshape to the LSTM argument shape (num of samples, time step, features)
 train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
 test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
 
 # LSTM network
 model = Sequential()
-model.add(LSTM(50, input_shape=(train_X.shape[1],train_X.shape[2])))
+model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2])))
 model.add(Dense(1))
 model.compile(loss='mae', optimizer='adam')
 
 # fit
-history = model.fit(train_X, train_y,epochs=50,batch_size=72,validation_data=(test_X,test_y),verbose=2,shuffle=False)
+history = model.fit(train_X, train_y,epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2, shuffle=False)
 pyplot.figure()
-pyplot.plot(history.history['loss'],label='train')
+pyplot.plot(history.history['loss'], label='train')
 pyplot.plot(history.history['val_loss'], label='test')
 pyplot.legend()
 pyplot.show()
 
-# test/evaluate
+# evaluate
 yhat = model.predict(test_X)
 test_X = test_X.reshape((test_X.shape[0], test_X.shape[2]))
 # invert scaling for forecast

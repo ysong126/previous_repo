@@ -15,7 +15,7 @@ from sklearn.metrics import mean_squared_error
 boston_X, boston_Y = datasets.load_boston(return_X_y=True)
 
 # number of obs in test set, the last ____ rows
-test_num = 50
+test_num = 106
 
 # split training set and test set
 boston_X_train = boston_X[:-test_num, :]
