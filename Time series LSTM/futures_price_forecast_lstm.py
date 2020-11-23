@@ -84,11 +84,16 @@ def series_to_supervised(data, col_names, n_in=1, dropnan=True ):
 
 # add past values as features
 n_lag = 7
+n_features = 6
+
 corn_data_supervised = series_to_supervised(scaled_corn_data, corn_data.columns.tolist(), n_in=n_lag, dropnan=True)
 print(corn_data_supervised.head(5))
 
 # drop the columns that we don't predict
 corn_data_supervised = corn_data_supervised.iloc[:, :-5]
+
+# calculate the dimension
+n_obs = n_lag*n_features
 
 # split train/test  0.9 / 0.1
 n_train = int(corn_data.shape[0]*0.9)
@@ -96,19 +101,22 @@ n_train = int(corn_data.shape[0]*0.9)
 train_data = corn_data_supervised.values[:n_train, :]
 test_data = corn_data_supervised.values[n_train:, :]
 
+
+
 train_X, train_y = train_data[:, :-1], train_data[:, -1]
 test_X, test_y = test_data[:, :-1], test_data[:, -1]
 
-train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
-test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
+# time step == n_lag; n_features == total number of columns(y included)
+train_X = train_X.reshape((train_X.shape[0], n_lag, n_features))
+test_X = test_X.reshape((test_X.shape[0], n_lag, n_features))
 
 # define our LSTM architecture
-# 1 vanilla
-# neuron number = number of Obs/(2*(num of input+ num of output ))
-n_samples, n_features = corn_data_supervised.shape
+# 1 vanilla/stacked
+# rule of thumb: neuron number = number of Obs/(2*(num of input+ num of output ))
 
 model = Sequential()
-model.add(LSTM(26, activation='relu', input_shape=(train_X.shape[1], train_X.shape[2])))
+model.add(LSTM(128, activation='relu', input_shape=(train_X.shape[1], train_X.shape[2]), return_sequences=True))
+model.add(LSTM(128, activation='relu', return_sequences=False))
 model.add(Dense(1))
 model.compile(optimizer="SGD", loss="mse")
 
