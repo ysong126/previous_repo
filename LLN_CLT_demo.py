@@ -56,3 +56,63 @@ for ax in axes:
     ax.legend(**legend_args)
 
 plt.show(block=False)
+
+# Non convergence
+# cauchy population mean is undefined
+# so sample mean does NOT converge
+distribution = cauchy()
+fig, ax = plt.subplots(figsize =(10,6))
+data= distribution.rvs(n)
+ax.plot(list(range(n)),data,linestyle ='', marker ='o', alpha=0.5)
+ax.vlines(list(range(n)), 0, data, lw=0.2)
+ax.set_title("{} observations from Cauchy distribution".format(n))
+plt.show()
+
+# CLT
+# sample mean
+n = 1000
+fig, ax = plt.subplots(figsize=(10, 6))
+data = distribution.rvs(n)
+
+sample_mean = np.empty(n)
+
+for i in range(1, n):
+    sample_mean[i] = np.mean(data[:i])
+
+ax.plot(list(range(n)), sample_mean, 'r-', lw=3, alpha=0.6, label="$\\bar X_n$")
+ax.plot(list(range(n)), [0] * n, 'k--', lw=0.5)
+ax.legend()
+
+# CLT
+fig, axes = plt.subplots(2,2,figsize=(10,6))
+plt.subplots_adjust(hspace=0.5)
+axes = axes.flatten()
+ns = [1,2,4,8]
+dom = list(range(9))
+
+for ax,n in zip(axes,ns):
+    b= binom(n,0.5)
+    ax.bar(dom,b.pmf(dom),alpha =0.6,align='center')
+    ax.set(xlim=(-0.5,8.5),ylim=(0,0.55), xticks= list(range(9)),yticks=(0,0.2,0.4),title='$n={}$'.format(n))
+plt.show()
+
+n = 250
+k = 100000 # draws
+distribution = expon(2)
+mu, sigma = distribution.mean(), distribution.std()
+
+data = distribution.rvs((k,n))
+sample_means = data.mean(axis=1)
+
+Y = np.sqrt(n)*(sample_means-mu)
+
+#plot
+fig,ax = plt.subplots(figsize=(10,6))
+xmin,xmax = -3*sigma, 3*sigma
+ax.set_xlim(xmin,xmax)
+ax.hist(Y,bins=50,alpha=0.5,density=True)
+xgrid = np.linspace(xmin,xmax,200)
+ax.plot(xgrid,norm.pdf(xgrid,scale=sigma),'k-',lw=2,label='$N(0,\sigma^2)$')
+ax.legend()
+
+plt.show()
